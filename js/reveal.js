@@ -4225,8 +4225,13 @@
 	 */
 	function isSwipePrevented( target ) {
 
+    var preventSwipe;
 		while( target && typeof target.hasAttribute === 'function' ) {
-			if( target.hasAttribute( 'data-prevent-swipe' ) ) return true;
+			if( target.hasAttribute( 'data-prevent-swipe' ) ) {
+				preventSwipe = target.getAttribute('data-prevent-swipe');
+				if (preventSwipe !== 'vertical' && preventSwipe !== 'horizontal') { return true; }
+				touch.preventSwipe = touch.preventSwipe || preventSwipe;
+			}
 			target = target.parentNode;
 		}
 
@@ -4411,6 +4416,7 @@
 	 */
 	function onTouchStart( event ) {
 
+		touch.preventSwipe = null;
 		if( isSwipePrevented( event.target ) ) return true;
 
 		touch.startX = event.touches[0].clientX;
@@ -4484,19 +4490,27 @@
 
 				if( deltaX > touch.threshold && Math.abs( deltaX ) > Math.abs( deltaY ) ) {
 					touch.captured = true;
-					navigateLeft();
+					if (touch.preventSwipe !== 'horizontal') {
+						navigateLeft();
+					}
 				}
 				else if( deltaX < -touch.threshold && Math.abs( deltaX ) > Math.abs( deltaY ) ) {
 					touch.captured = true;
-					navigateRight();
+					if (touch.preventSwipe !== 'horizontal') {
+						navigateRight();
+					}
 				}
 				else if( deltaY > touch.threshold ) {
 					touch.captured = true;
-					navigateUp();
+					if (touch.preventSwipe !== 'vertical') {
+						navigateUp();
+					}
 				}
 				else if( deltaY < -touch.threshold ) {
 					touch.captured = true;
-					navigateDown();
+					if (touch.preventSwipe !== 'vertical') {
+						navigateDown();
+					}
 				}
 
 				// If we're embedded, only block touch events if they have
